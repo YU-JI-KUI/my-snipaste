@@ -141,7 +141,7 @@ class _Tooltip:
 # ── 贴图独立窗口 ───────────────────────────────────
 
 class _PinWindow:
-    """把截图贴到屏幕，独立浮动，橙色边框，双击/右键关闭"""
+    """把截图贴到屏幕，独立浮动，橙色边框，双击关闭，右键菜单（复制/关闭）"""
     def __init__(self, root, image: Image.Image, screen_x, screen_y):
         self._image = image
         self._root  = root
@@ -165,12 +165,44 @@ class _PinWindow:
         self._drag_x = self._drag_y = 0
         self._win_x  = self._win_y  = 0
 
+        # 右键菜单
+        self._menu = tk.Menu(win, tearoff=0,
+                             bg='#3C3C3C', fg='white',
+                             activebackground='#0A84FF', activeforeground='white',
+                             font=('微软雅黑', 10), bd=0, relief=tk.FLAT)
+        self._menu.add_command(label='复制图片', command=self._copy)
+        self._menu.add_separator()
+        self._menu.add_command(label='关闭', command=self._close)
+
         canvas.bind('<ButtonPress-1>',   self._on_press)
         canvas.bind('<B1-Motion>',       self._on_drag)
         canvas.bind('<Double-Button-1>', lambda e: self._close())
-        canvas.bind('<Button-3>',        lambda e: self._close())
+        canvas.bind('<Button-3>',        self._show_menu)
 
         win.lift()
+
+    def _show_menu(self, event):
+        # overrideredirect 窗口弹菜单需要先 focus，否则菜单点击外部不会自动收起
+        self._win.focus_force()
+        try:
+            self._menu.tk_popup(event.x_root, event.y_root)
+        finally:
+            self._menu.grab_release()
+
+    def _copy(self):
+        if not _WIN32_OK:
+            messagebox.showerror('复制失败', '缺少 pywin32 依赖，请重新运行 start.bat 安装。')
+            return
+        try:
+            buf = io.BytesIO()
+            self._image.convert('RGB').save(buf, format='BMP')
+            win32clipboard.OpenClipboard()
+            win32clipboard.EmptyClipboard()
+            win32clipboard.SetClipboardData(win32con.CF_DIB, buf.getvalue()[14:])
+            win32clipboard.CloseClipboard()
+        except Exception as e:
+            logging.error(f'贴图复制失败: {e}')
+            messagebox.showerror('复制失败', str(e))
 
     def _close(self):
         try: self._win.destroy()
