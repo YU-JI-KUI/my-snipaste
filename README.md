@@ -113,10 +113,50 @@ my-snipaste/
 
 ---
 
+## 内网环境配置 pip 镜像
+
+公司内网通常无法直接访问 PyPI（pip 默认源），`start.bat` 运行时会卡在依赖安装步骤。解决方法：
+
+**方法一：配置企业内网镜像（推荐，一次配置永久生效）**
+
+询问公司 IT / 运维，获取内网 pip 镜像地址，然后执行：
+
+```bat
+pip config set global.index-url http://你的内网镜像地址/simple/
+pip config set global.trusted-host 你的内网镜像域名或IP
+```
+
+配置完成后正常运行 `start.bat` 即可。
+
+**方法二：临时指定镜像（每次安装时指定）**
+
+打开命令行，手动执行：
+
+```bat
+pip install -r requirements.txt -i http://你的内网镜像地址/simple/ --trusted-host 你的内网镜像域名或IP
+```
+
+安装成功后再双击 `start.bat`（此时依赖已存在，不会重新下载）。
+
+**方法三：在有外网的机器上提前打包依赖**
+
+```bat
+:: 在有外网的机器上执行，把依赖下载到 packages/ 目录
+pip download -r requirements.txt -d packages/
+
+:: 把整个项目目录（含 packages/）复制到内网机器，然后执行
+pip install -r requirements.txt --no-index --find-links packages/
+```
+
+---
+
 ## 常见问题
 
-**Q: 双击 start.bat 没有反应或弹出错误**
-检查网络是否正常（需要下载依赖），或查看同目录下的 `error.log`。
+**Q: 双击 start.bat 提示"依赖安装失败"**
+内网环境无法访问外网 pip 源，参考上方「内网环境配置 pip 镜像」章节。
+
+**Q: 双击 start.bat 没有反应或弹出其他错误**
+查看同目录下的 `error.log` 获取详细错误信息。
 
 **Q: 快捷键没有反应**
 部分安全软件会拦截键盘钩子，将 Python 加入信任列表，或通过右键托盘图标截图。
