@@ -35,14 +35,16 @@ def _create_default_icon() -> Image.Image:
 class TrayIcon:
     """系统托盘图标，运行在独立线程"""
 
-    def __init__(self, on_snip, on_quit):
+    def __init__(self, on_snip, on_quit, on_tray_failed=None):
         """
-        on_snip: 点击截图时的回调
-        on_quit: 点击退出时的回调
+        on_snip:        点击截图时的回调
+        on_quit:        点击退出时的回调
+        on_tray_failed: 托盘启动失败时的回调（可选）
         """
-        self._on_snip = on_snip
-        self._on_quit = on_quit
-        self._icon = None
+        self._on_snip        = on_snip
+        self._on_quit        = on_quit
+        self._on_tray_failed = on_tray_failed
+        self._icon  = None
         self._thread = None
 
     def start(self):
@@ -54,7 +56,10 @@ class TrayIcon:
         try:
             import pystray
         except ImportError:
-            logging.warning('pystray 未安装，系统托盘不可用')
+            logging.error('pystray 未安装，系统托盘不可用')
+            # 通知主线程弹出提示
+            if self._on_tray_failed:
+                self._on_tray_failed()
             return
 
         try:
@@ -77,6 +82,8 @@ class TrayIcon:
 
         except Exception as e:
             logging.error(f'托盘图标运行失败: {e}')
+            if self._on_tray_failed:
+                self._on_tray_failed()
 
     def _on_snip_clicked(self, icon, item):
         self._on_snip()
