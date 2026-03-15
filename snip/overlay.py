@@ -24,6 +24,19 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 from PIL import Image, ImageTk, ImageGrab, ImageEnhance, ImageDraw, ImageFont
 
+try:
+    import winreg
+    _WINREG_OK = True
+except ImportError:
+    _WINREG_OK = False
+
+try:
+    import win32clipboard
+    import win32con
+    _WIN32_OK = True
+except ImportError:
+    _WIN32_OK = False
+
 
 # ── 常量 ──────────────────────────────────────────
 
@@ -32,8 +45,6 @@ HANDLE_SIZE = 6
 MIN_SIZE    = 5
 DIM_FACTOR  = 0.45
 TOOLBAR_GAP = 8
-DRAG_THR    = 4
-
 PRESET_COLORS = [
     '#FF3B30', '#FF9500', '#FFCC00', '#34C759',
     '#007AFF', '#AF52DE', '#FFFFFF', '#000000',
@@ -188,7 +199,7 @@ class OverlayWindow:
     RECT_COLOR = '#1890FF'
     RECT_WIDTH = 2
 
-    def __init__(self, root, on_done, on_captured=None):
+    def __init__(self, root, on_done):
         self.root     = root
         self._on_done = on_done   # 完成或取消都调用，重置 _snipping
 
@@ -215,6 +226,7 @@ class OverlayWindow:
         # 标注
         self._annotations      = []
         self._active_entry     = None
+        self._active_entry_win = None
         self._active_entry_pos = None
         self._shape_start      = None
         self._shape_preview_id = None
@@ -977,14 +989,16 @@ class OverlayWindow:
             self._commit_entry()
         timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
         desktop = os.path.expanduser('~')
-        try:
-            import winreg
-            with winreg.OpenKey(winreg.HKEY_CURRENT_USER,
-                    r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders') as k:
-                d = winreg.QueryValueEx(k, 'Desktop')[0]
-                if os.path.isdir(d):
-                    desktop = d
-        except Exception:
+        if _WINREG_OK:
+            try:
+                with winreg.OpenKey(winreg.HKEY_CURRENT_USER,
+                        r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders') as k:
+                    d = winreg.QueryValueEx(k, 'Desktop')[0]
+                    if os.path.isdir(d):
+                        desktop = d
+            except Exception:
+                pass
+        if desktop == os.path.expanduser('~'):
             c = os.path.join(os.path.expanduser('~'), 'Desktop')
             if os.path.isdir(c):
                 desktop = c
@@ -1005,8 +1019,11 @@ class OverlayWindow:
     def _copy_to_clipboard(self):
         if self._active_entry:
             self._commit_entry()
+        if not _WIN32_OK:
+            messagebox.showerror('复制失败', '缺少 pywin32 依赖，请重新运行 start.bat 安装。',
+                                 parent=self._window)
+            return
         try:
-            import win32clipboard, win32con
             buf = io.BytesIO()
             self._compose().convert('RGB').save(buf, format='BMP')
             win32clipboard.OpenClipboard()
