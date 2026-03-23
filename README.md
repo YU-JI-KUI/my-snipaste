@@ -17,8 +17,18 @@
 ```
 git clone https://github.com/YU-JI-KUI/my-snipaste.git
 cd my-snipaste
-双击 start.bat
 ```
+
+根据你的环境选择启动方式：
+
+| 环境 | 启动方式 |
+|------|---------|
+| 普通 Windows 环境 | 双击 `start.bat` |
+| 企业内网（禁止执行 .bat / PowerShell） | 双击 `start.pyw` |
+
+> **为什么 `.pyw` 能绕过限制？**
+> `.pyw` 文件由 Windows 自动关联到 `pythonw.exe`，属于普通的文件打开操作，
+> 不触发脚本执行策略（BAT/PS1 的限制）。只要 Python 已安装且 `.pyw` 关联正常即可使用。
 
 启动成功后，右下角系统托盘（通知区域）出现相机图标，即可使用。
 
@@ -93,8 +103,10 @@ cd my-snipaste
 my-snipaste/
 ├── main.py          # 入口：DPI感知声明、单实例锁、异常捕获
 ├── requirements.txt # 依赖列表
-├── start.bat        # 一键启动脚本
-├── stop.bat         # 强制终止脚本
+├── start.bat        # 一键启动脚本（普通环境）
+├── start.pyw        # 一键启动脚本（企业内网受限环境，无需 bat/PowerShell）
+├── stop.bat         # 强制终止脚本（普通环境）
+├── stop.pyw         # 强制终止脚本（企业内网受限环境）
 └── snip/
     ├── app.py       # 协调模块：串联各组件
     ├── hotkey.py    # 全局热键管理（keyboard 库）
@@ -152,10 +164,14 @@ pip install -r requirements.txt --no-index --find-links packages/
 
 ## 常见问题
 
-**Q: 双击 start.bat 提示"依赖安装失败"**
-内网环境无法访问外网 pip 源，参考上方「内网环境配置 pip 镜像」章节。
+**Q: 公司不让运行 .bat 文件怎么办？**
+双击 `start.pyw` 替代 `start.bat`，效果完全相同，且无控制台黑窗口。
+如果双击 `.pyw` 没有反应，右键 → 打开方式 → 选择 `pythonw.exe`（在 Python 安装目录下）。
 
-**Q: 双击 start.bat 没有反应或弹出其他错误**
+**Q: 双击 start.bat 提示"依赖安装失败"**
+内网环境无法访问外网 pip 源，参考上方「内网环境配置 pip 镜像」章节。`start.pyw` 遇到同样问题时会弹窗提示。
+
+**Q: 双击 start.bat / start.pyw 没有反应或弹出其他错误**
 查看同目录下的 `error.log` 获取详细错误信息。
 
 **Q: 快捷键没有反应**

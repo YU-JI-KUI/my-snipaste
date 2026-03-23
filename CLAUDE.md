@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **my-snipaste** 是一个面向 Windows 用户的轻量截图工具，用于公司内网环境（无法安装 Snipaste）。
 参考产品：https://www.snipaste.com/
 
-用户从 GitHub 下载源码，双击 `start.bat` 即可运行，无需安装。
+用户从 GitHub 下载源码，双击 `start.bat`（或受限环境下双击 `start.pyw`）即可运行，无需安装。
 
 ## 技术栈
 
@@ -24,6 +24,17 @@ pip install -r requirements.txt
 python main.py        # 开发调试（有终端输出）
 pythonw main.py       # 生产运行（无黑窗口）
 ```
+
+## 启动方式
+
+| 文件 | 适用场景 |
+|------|---------|
+| `start.bat` | 普通 Windows 环境 |
+| `start.pyw` | 企业内网禁止执行 .bat / PowerShell 的受限环境，双击即可 |
+| `stop.bat` | 普通环境强制终止 |
+| `stop.pyw` | 受限环境强制终止（通常用托盘「退出」即可） |
+
+`.pyw` 由 Windows 关联到 `pythonw.exe`，属于文件打开操作，不受 BAT/PS1 脚本执行策略限制。
 
 ## 架构总览
 
