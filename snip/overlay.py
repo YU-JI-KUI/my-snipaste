@@ -44,7 +44,7 @@ HANDLES     = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w']
 HANDLE_SIZE = 6
 MIN_SIZE    = 5
 DIM_FACTOR  = 0.45
-TOOLBAR_GAP = 8
+TOOLBAR_GAP = 12
 PRESET_COLORS = [
     '#FF3B30', '#FF9500', '#FFCC00', '#34C759',
     '#007AFF', '#AF52DE', '#FFFFFF', '#000000',
@@ -878,10 +878,9 @@ class OverlayWindow:
         row1 = tk.Frame(parent, bg='#4A4A4A')
         row1.pack(side=tk.TOP)
 
-        # 工具栏字体和内边距缩小到约 2/3
-        BTN_FONT  = ('Segoe UI Emoji', 9)
-        BTN_PADX  = 5
-        BTN_PADY  = 2
+        BTN_FONT  = ('Segoe UI Emoji', 13)
+        BTN_PADX  = 8
+        BTN_PADY  = 3
 
         def ibtn(p, icon, tip, cmd, fg='white', bg='#5A5A5A',
                  abg='#707070', afg='white'):
@@ -897,25 +896,25 @@ class OverlayWindow:
                  ('arrow','→','箭头'), ('rect','□','矩形'), ('mosaic','▦','马赛克')]
         for name, icon, tip in tools:
             btn = ibtn(row1, icon, tip, lambda n=name: self._set_tool(n))
-            btn.pack(side=tk.LEFT, padx=1, pady=2)
+            btn.pack(side=tk.LEFT, padx=2, pady=3)
             self._tool_btns[name] = btn
 
-        tk.Frame(row1, bg='#666666', width=1).pack(side=tk.LEFT, fill=tk.Y, padx=4, pady=3)
+        tk.Frame(row1, bg='#666666', width=1).pack(side=tk.LEFT, fill=tk.Y, padx=6, pady=4)
         ibtn(row1, '↩', '撤销 (Ctrl+Z)', self._undo,
-             fg='#CCCCCC').pack(side=tk.LEFT, padx=1, pady=2)
+             fg='#CCCCCC').pack(side=tk.LEFT, padx=2, pady=3)
 
         ibtn(row1, '✕', '关闭', self._cancel,
              fg='#CCCCCC', bg='#4A4A4A',
-             abg='#C0392B', afg='white').pack(side=tk.RIGHT, padx=(1,4), pady=2)
+             abg='#C0392B', afg='white').pack(side=tk.RIGHT, padx=(2,6), pady=3)
         # 保存和复制统一：绿底黑字
         ibtn(row1, '✓', '复制并关闭 (Ctrl+C)', self._copy_to_clipboard,
              fg='black', bg='#30D158',
-             abg='#25A244', afg='black').pack(side=tk.RIGHT, padx=1, pady=2)
+             abg='#25A244', afg='black').pack(side=tk.RIGHT, padx=2, pady=3)
         ibtn(row1, '💾', '保存 (Ctrl+S)', self._save,
              fg='black', bg='#30D158',
-             abg='#25A244', afg='black').pack(side=tk.RIGHT, padx=1, pady=2)
+             abg='#25A244', afg='black').pack(side=tk.RIGHT, padx=2, pady=3)
         ibtn(row1, '📌', '贴到屏幕', self._pin,
-             ).pack(side=tk.RIGHT, padx=(1,3), pady=2)
+             ).pack(side=tk.RIGHT, padx=(2,4), pady=3)
 
         # 颜色/字号行（默认隐藏）
         self._style_row = tk.Frame(parent, bg='#404040')
@@ -924,21 +923,21 @@ class OverlayWindow:
         row2.pack()
         for hc in PRESET_COLORS:
             btn = tk.Button(row2, bg=hc, activebackground=hc,
-                            width=1, height=1, relief=tk.FLAT, cursor='hand2', bd=0,
+                            width=2, height=1, relief=tk.FLAT, cursor='hand2', bd=0,
                             command=lambda c=hc: self._set_color(c))
-            btn.pack(side=tk.LEFT, padx=1, pady=3)
+            btn.pack(side=tk.LEFT, padx=2, pady=4)
             self._color_btns[hc] = btn
-        self._color_dot = tk.Label(row2, bg=self._color, width=2, bd=1, relief=tk.SUNKEN)
-        self._color_dot.pack(side=tk.LEFT, padx=(4,1), pady=4)
-        tk.Frame(row2, bg='#606060', width=1).pack(side=tk.LEFT, padx=5, fill=tk.Y, pady=3)
+        self._color_dot = tk.Label(row2, bg=self._color, width=3, bd=1, relief=tk.SUNKEN)
+        self._color_dot.pack(side=tk.LEFT, padx=(6,2), pady=5)
+        tk.Frame(row2, bg='#606060', width=1).pack(side=tk.LEFT, padx=7, fill=tk.Y, pady=4)
         tk.Label(row2, text='字号', bg='#404040', fg='#BBBBBB',
-                 font=('微软雅黑', 7)).pack(side=tk.LEFT, padx=(0,1))
+                 font=('微软雅黑', 10)).pack(side=tk.LEFT, padx=(0,2))
         self._size_var = tk.StringVar(value=str(self._font_size))
         spin = tk.Spinbox(row2, from_=8, to=72, textvariable=self._size_var,
-                          width=3, font=('微软雅黑', 8),
+                          width=3, font=('微软雅黑', 12),
                           bg='#5A5A5A', fg='white', buttonbackground='#5A5A5A',
                           relief=tk.FLAT, bd=1, command=self._on_size_change)
-        spin.pack(side=tk.LEFT, padx=(0,3), pady=3)
+        spin.pack(side=tk.LEFT, padx=(0,4), pady=4)
         spin.bind('<Return>', lambda e: self._on_size_change())
 
         self._update_tool_highlight()
